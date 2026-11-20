@@ -1,0 +1,70 @@
+{
+  "index_patterns": [
+    "panos-globalprotect-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-30d"
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "vsys": {
+          "type": "keyword"
+        },
+        "gp_version": {
+          "type": "keyword"
+        },
+        "connection_type": {
+          "type": "keyword"
+        },
+        "ip": {
+          "ignore_malformed": true,
+          "type": "ip"
+        },
+        "virtual_ip": {
+          "ignore_malformed": true,
+          "type": "ip"
+        },
+        "result": {
+          "type": "keyword"
+        },
+        "auth_method": {
+          "type": "keyword"
+        },
+        "log_type": {
+          "type": "keyword"
+        },
+        "event_type": {
+          "type": "keyword"
+        },
+        "stage": {
+          "type": "keyword"
+        },
+        "src_country": {
+          "type": "keyword"
+        },
+        "device_hostname": {
+          "type": "keyword"
+        },
+        "serial": {
+          "type": "keyword"
+        },
+        "client_os": {
+          "type": "keyword"
+        },
+        "username": {
+          "type": "keyword"
+        },
+        "gateway_name": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "composed_of": [],
+  "priority": 100
+}

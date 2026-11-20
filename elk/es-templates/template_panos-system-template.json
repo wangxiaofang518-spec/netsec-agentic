@@ -1,0 +1,52 @@
+{
+  "index_patterns": [
+    "panos-system-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-14d"
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "vsys": {
+          "type": "keyword"
+        },
+        "log_type": {
+          "type": "keyword"
+        },
+        "@timestamp": {
+          "type": "date"
+        },
+        "event_id": {
+          "type": "keyword"
+        },
+        "device_hostname": {
+          "type": "keyword"
+        },
+        "serial": {
+          "type": "keyword"
+        },
+        "severity_level": {
+          "type": "keyword"
+        }
+      },
+      "dynamic_templates": [
+        {
+          "sls_generic_columns_as_keyword": {
+            "match": "column*",
+            "match_mapping_type": "*",
+            "mapping": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        }
+      ]
+    }
+  },
+  "composed_of": []
+}

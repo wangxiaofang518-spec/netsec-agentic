@@ -1,0 +1,30 @@
+{
+  "index_patterns": [
+    "panos-other-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-14d"
+        }
+      }
+    },
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "sls_generic_columns_as_keyword": {
+            "match": "column*",
+            "match_mapping_type": "*",
+            "mapping": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        }
+      ]
+    }
+  },
+  "composed_of": [],
+  "priority": 50
+}

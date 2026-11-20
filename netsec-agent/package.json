@@ -1,0 +1,14 @@
+{
+  "name": "netsec-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "NetSec-Agentic — 常驻网络安全运营智能体，嵌入动态拓扑监控页，复用现有 MCP（scm + 4×panos + elk）做排障/巡检/路径取证/配置检查",
+  "main": "agent/server.mjs",
+  "scripts": {
+    "start": "node agent/server.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0"
+  }
+}

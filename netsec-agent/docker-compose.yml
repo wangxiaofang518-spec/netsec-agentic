@@ -1,0 +1,41 @@
+# NetSec-Agentic — 独立 compose 项目，沿用 topo 既有模式
+#   - 绑 VPC 内网 IP 10.199.3.47:8081（不监听公网、不碰阿里云安全组）
+#   - 接 external 网 elk_elk → 直连 elasticsearch:9200 查 ELK
+#   - 密钥走 env_file（600, gitignore），绝不进镜像
+#   - 完全不碰 /opt/elk、不碰 /opt/topo；回滚：docker compose -p netsec-agent down
+#
+# 启动：docker compose -p netsec-agent up -d --build
+# 秒切只读/自主：改 secrets/agent.env 的 AGENT_MODE 后 docker compose -p netsec-agent up -d
+services:
+  netsec-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: netsec-agent:latest
+    container_name: netsec-agent
+    restart: unless-stopped
+    # 绑内网 VPC IP；回退仅本机：改 127.0.0.1:8081:8081 后 ssh -L 8081:127.0.0.1:8081
+    ports:
+      - "${NETSEC_BIND_IP:-127.0.0.1}:8081:8081"
+    env_file:
+      - ./secrets/agent.env
+    environment:
+      HTTP_PORT: "8081"
+      ES_URL: "http://elasticsearch:9200"
+      CORS_ORIGIN: "http://${NETSEC_BIND_IP:-127.0.0.1}:8080"
+      # AGENT_MODE / Bedrock(CLAUDE_CODE_USE_BEDROCK+AWS_BEARER_TOKEN_BEDROCK+ANTHROPIC_MODEL) / MCP 凭据 来自 agent.env
+    volumes:
+      - ./audit:/app/audit        # 审计日志落宿主，容器重建不丢
+      - ./agent:/app/agent  # 固化 agent 代码/提示词，容器重建不丢(2026-07-26)
+    networks:
+      - elk
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+networks:
+  elk:
+    external: true
+    name: elk_elk

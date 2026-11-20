@@ -1,0 +1,85 @@
+{
+  "snapshot_date": "2026-07-10",
+  "snapshot_note": "首份基线快照(手动建立)。数据源:2026-07-10 全平台巡检 + 证书复查。定时任务 daily-netsec-inspection 次日起以此为对比基准。",
+  "ngfw": {
+    "sase-external-gw": {
+      "hostname": "PAVM300-Branch-GPGW-SH",
+      "sw_version": "11.2.7-h17",
+      "device_cert": "Valid",
+      "ipsec_tunnels": ["lab-ipsectunnel-prismaaccess", "partner-china-sc", "partner-global-rn"],
+      "ipsec_count": 3,
+      "bgp_peers": {
+        "china-sc": "Established",
+        "global-rn": "Established",
+        "peer-to-prismaaccess": "Established",
+        "prismachina": "Connect-never-established"
+      },
+      "route_count_default_vr": 30,
+      "route_count_corp_vr": 38,
+      "key_prefixes_present": ["172.172.200.0", "172.172.201.0", "172.172.100.0", "172.172.101.0", "172.31.2.0", "172.31.3.0", "172.31.10.0", "10.199.0.0/16", "10.230.188.0", "10.230.199.0"],
+      "session_num_active": 219,
+      "gp_online_users": 1,
+      "pbf_active": ["lab-nopbf-to-azurechina-trust", "lab-pbf-to-aws-datacenter", "lab-pbf-to-hk-prismaaccess-backup", "lab-pbf-to-hk-azure-primary", "partner-china-to-hk"],
+      "pbf_disabled": ["lab-pbf-to-azure-global", "partner-global-to-sc"]
+    },
+    "scvm-aws-hk": {
+      "hostname": "PAVM100-PrismaSC-HK",
+      "sw_version": "11.1.6-h1",
+      "device_cert": "Valid",
+      "device_cert_expiry": "2026/10/08",
+      "ipsec_tunnels": ["IPSecTunnel-To-PrismaAccess-HK"],
+      "ipsec_count": 1,
+      "bgp_peers": {"peer-to-prismaaccesslab": "Established"},
+      "bgp_peer_ip": "10.101.234.1",
+      "route_count": 28,
+      "key_prefixes_present": ["172.172.200.0", "172.172.201.0", "172.172.100.0", "172.172.101.0", "10.199.0.0/16", "10.230.188.0"],
+      "session_num_active": 77,
+      "ssl_cert_soonest_expiry": "2027-06-11"
+    },
+    "scvm-aws-sg": {
+      "hostname": "PAVM100-PrismaSC-SG",
+      "sw_version": "11.1.13-h5",
+      "device_cert": "Valid",
+      "ipsec_tunnels": ["IPSecTunnel-To-PrismaAccess-SG"],
+      "ipsec_count": 1,
+      "bgp_peers": {"peer-to-prismaaccesslab": "Established"},
+      "bgp_peer_ip": "10.101.234.11",
+      "route_count": 30,
+      "key_prefixes_present": ["172.172.200.0", "172.172.201.0", "172.172.100.0", "172.172.101.0", "172.31.2.0", "172.31.3.0", "172.31.10.0", "10.199.0.0/16"],
+      "session_num_active": 25,
+      "ssl_cert_soonest_expiry": "2027-06-06"
+    },
+    "aivm-alibaba": {
+      "hostname": "AI-SECVM-Branch-Alibaba-CN",
+      "sw_version": "11.2.10-h9",
+      "device_cert": "Valid",
+      "ipsec_tunnels": ["Ipsec-Prismaaccess-JP"],
+      "ipsec_count": 1,
+      "bgp_peers": {},
+      "bgp_note": "no BGP - static routing (RN-To-AlibabaChina static)",
+      "route_count": 17,
+      "key_prefixes_present": ["10.199.1.0", "10.199.2.0", "10.199.3.0", "10.230.189.0"],
+      "session_num_active": 772
+    }
+  },
+  "prisma_access": {
+    "backbone_routing": "asymmetric-routing-only",
+    "service_connections": {
+      "TO-AWS-HongKong": {"region": "hong-kong", "peer_ip": "6.6.6.6", "peer_as": "65533", "local_ip": "10.101.234.1", "subnets": ["6.6.6.6/32"]},
+      "TO-AWS-Singapore": {"region": "ap-southeast-1", "peer_ip": "5.5.5.5", "peer_as": "65535", "local_ip": "10.101.234.11", "subnets": ["5.5.5.5/32"]}
+    },
+    "sc_count": 2,
+    "remote_networks": {
+      "RemoteNetwork-To-AzureChina": {"spn": "asia-northeast-<spn>", "bgp": true, "peer_as": "65531", "subnets": ["192.168.66.1/32"]},
+      "RemoteNetwork-To-AzureHongKong": {"spn": "asia-northeast-<spn>", "bgp": true, "peer_as": "65532", "subnets": ["192.168.99.1/32"]},
+      "RemoteNetwork-To-AlibabaChina": {"spn": "asia-northeast-<spn>", "bgp": false, "static_subnets": ["10.199.0.0/16", "10.230.199.0/24"]}
+    },
+    "rn_count": 3,
+    "service_ip": "198.51.100.10"
+  },
+  "known_issues_baseline": [
+    "gpgw prismachina BGP peer 常年 Connect 从未建立 (死peer, 已知)",
+    "gpgw lab-pbf-to-azure-global 案例2故障PBF残留 disabled (已知,未清理)",
+    "scvm-aws-hk uptime 252天,设备证书90天有效期需关注auto-renew"
+  ]
+}

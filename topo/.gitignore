@@ -1,0 +1,4 @@
+# 密钥绝不进 Git —— 铁律
+secrets/topo.env
+# 运行时产物（真实状态含内网 IP/隧道/BGP，按需保留占位模板即可）
+web/status.json

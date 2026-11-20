@@ -1,0 +1,35 @@
+# 动态拓扑监控 — 独立 compose 项目 "topo"
+# 起停：docker compose -p topo up -d --build   /   docker compose -p topo down
+# 与现有 ELK 完全隔离：不改 /opt/elk，仅以 external 方式接入其网络访问 ES。
+services:
+  topo:
+    build: ./collector
+    image: topo-collector:latest
+    container_name: topo
+    restart: unless-stopped
+    # 绑到 Ubuntu 的 VPC 内网地址 10.199.3.47 —— 同网段(10.199.3.0/24)内网机器可访问，
+    # 公网网卡(eth0 公网侧)不监听 8080，不碰阿里云公网安全组，暴露面最小。
+    # 回到"仅本机/SSH隧道"：改回 "127.0.0.1:8080:8080"。要全网段监听：改 "8080:8080"。
+    ports:
+      - "${NETSEC_BIND_IP:-127.0.0.1}:8080:8080"
+    env_file:
+      - ./secrets/topo.env
+    environment:
+      WEB_DIR: /app/web
+      HTTP_PORT: "8080"
+      POLL_INTERVAL: "30"
+      ES_URL: "http://elasticsearch:9200"
+    volumes:
+      # 前端静态资源热挂载：改 index.html / topo-live.js 无需重建镜像，重启容器即可
+      - ./web:/app/web
+    networks:
+      - elk          # 访问 ES（容器名 elasticsearch）
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "3"}
+
+networks:
+  # 复用现有 ELK 的 compose 网络（项目名 elk → 网络名 elk_elk）
+  elk:
+    external: true
+    name: elk_elk

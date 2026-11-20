@@ -1,0 +1,3 @@
+Sanitized public export of the NetSec-Agentic reference implementation.
+Credentials, certificates, public IP addresses, tenant IDs, device serials and personal names
+were removed or replaced with placeholders / RFC 5737 documentation addresses. See NOTICE.md.

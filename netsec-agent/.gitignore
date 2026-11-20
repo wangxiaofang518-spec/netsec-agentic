@@ -1,0 +1,7 @@
+# 密钥与审计绝不进 Git
+secrets/agent.env
+secrets/*.env
+!secrets/agent.env.example
+audit/
+node_modules/
+*.log

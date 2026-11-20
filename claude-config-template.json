@@ -1,0 +1,81 @@
+{
+  "_comment": "Claude MCP 配置模板 — 此文件仅为参考，建议用 setup.ps1 / setup.sh 自动注册，不含真实密钥，可安全提交 GitHub",
+  "_usage": "如需手动注册，将各节复制并替换所有 <PLACEHOLDER> 后执行 claude mcp add",
+  "_servers": "共 6 个 MCP Server：scm / koi / prisma-airs / panos-sase-external-gw / panos-scvm-aws / panos-aivm-alibaba",
+
+  "scm": {
+    "type": "stdio",
+    "command": "python",
+    "_command_note": "Windows 用 python，macOS/Linux 用 python3；如需绝对路径见 setup.ps1 的 Find-Python 逻辑",
+    "args": ["-m", "scm_mcp"],
+    "env": {
+      "SCM_CLIENT_ID": "<your-service-account>@<your-tsg-id>.iam.panserviceaccount.com",
+      "SCM_CLIENT_SECRET": "<SCM_CLIENT_SECRET>",
+      "SCM_TSG_ID": "<your-tsg-id>"
+    },
+    "_tools": 73,
+    "_description": "Strata Cloud Manager — 防火墙策略/对象/配置推送"
+  },
+
+  "koi": {
+    "type": "stdio",
+    "command": "node",
+    "args": ["<NPM_GLOBAL_ROOT>/koi-mcp-server/dist/index.js"],
+    "_args_note": "NPM_GLOBAL_ROOT = npm root -g 的输出路径",
+    "env": {
+      "KOI_API_KEY": "<KOI_API_KEY — 从 KOI 控制台 Settings → API Access 生成，有效期约1年>"
+    },
+    "_tools": 12,
+    "_description": "KOI 软件供应链安全 — 终端风险管控/告警/修复"
+  },
+
+  "prisma-airs": {
+    "type": "stdio",
+    "command": "node",
+    "args": ["<NPM_GLOBAL_ROOT>/prisma-airs-ops-mcp-server/dist/index.js"],
+    "env": {
+      "PANW_AI_SEC_API_KEY": "<PANW_AI_SEC_API_KEY>",
+      "PANW_MGMT_CLIENT_ID": "<your-service-account>@<your-tsg-id>.iam.panserviceaccount.com",
+      "PANW_MGMT_CLIENT_SECRET": "<PANW_MGMT_CLIENT_SECRET — 与 SCM_CLIENT_SECRET 相同>",
+      "PANW_MGMT_TSG_ID": "<your-airs-tsg-id>"
+    },
+    "_tools": 44,
+    "_description": "Prisma AIRS AI 安全 — 运行时扫描/红队测试/模型安全"
+  },
+
+  "panos-sase-external-gw": {
+    "type": "stdio",
+    "command": "node",
+    "args": ["<NPM_GLOBAL_ROOT>/@iflow-mcp/apius-tech-panos-mcp/dist/index.js"],
+    "env": {
+      "PANOS_HOST": "203.0.113.21",
+      "PANOS_API_KEY": "<PANOS_API_KEY_SASE_EXTERNAL_GW>"
+    },
+    "_tools": 116,
+    "_description": "PAN-OS NGFW — Azure GP 网关 (PAVM300-Branch-GPGW-SH)，中国大陆用户 GlobalProtect 接入"
+  },
+
+  "panos-scvm-aws": {
+    "type": "stdio",
+    "command": "node",
+    "args": ["<NPM_GLOBAL_ROOT>/@iflow-mcp/apius-tech-panos-mcp/dist/index.js"],
+    "env": {
+      "PANOS_HOST": "203.0.113.22",
+      "PANOS_API_KEY": "<PANOS_API_KEY_SCVM_AWS>"
+    },
+    "_tools": 116,
+    "_description": "PAN-OS NGFW — AWS Prisma SC (PAVM100-PrismaSC-HK)，数据中心 172.172.0.0/16 接入点"
+  },
+
+  "panos-aivm-alibaba": {
+    "type": "stdio",
+    "command": "node",
+    "args": ["<NPM_GLOBAL_ROOT>/@iflow-mcp/apius-tech-panos-mcp/dist/index.js"],
+    "env": {
+      "PANOS_HOST": "203.0.113.24",
+      "PANOS_API_KEY": "<PANOS_API_KEY_AIVM_ALIBABA>"
+    },
+    "_tools": 116,
+    "_description": "PAN-OS NGFW — 阿里云安全 VM (AI-SECVM-Branch-Alibaba-CN)，保护 Ubuntu ELK 服务器"
+  }
+}

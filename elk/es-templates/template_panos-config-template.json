@@ -1,0 +1,16 @@
+{
+  "index_patterns": [
+    "panos-config-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-180d"
+        }
+      }
+    }
+  },
+  "composed_of": [],
+  "priority": 50
+}

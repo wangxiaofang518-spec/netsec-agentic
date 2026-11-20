@@ -1,0 +1,16 @@
+{
+  "index_patterns": [
+    "panos-hipmatch-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-14d"
+        }
+      }
+    }
+  },
+  "composed_of": [],
+  "priority": 50
+}

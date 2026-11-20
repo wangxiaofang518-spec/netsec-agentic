@@ -1,0 +1,106 @@
+{
+  "index_patterns": [
+    "panos-threat-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-90d"
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "rule": {
+          "type": "keyword"
+        },
+        "threat_id": {
+          "type": "keyword"
+        },
+        "dst_ip": {
+          "type": "ip"
+        },
+        "src_ip": {
+          "type": "ip"
+        },
+        "device_name": {
+          "type": "keyword"
+        },
+        "log_type": {
+          "type": "keyword"
+        },
+        "device_hostname": {
+          "type": "keyword"
+        },
+        "subtype": {
+          "type": "keyword"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "direction": {
+          "type": "keyword"
+        },
+        "vsys": {
+          "type": "keyword"
+        },
+        "dst_country": {
+          "type": "keyword"
+        },
+        "severity": {
+          "type": "keyword"
+        },
+        "dst_zone": {
+          "type": "keyword"
+        },
+        "src_port": {
+          "type": "integer"
+        },
+        "@timestamp": {
+          "type": "date"
+        },
+        "application": {
+          "type": "keyword"
+        },
+        "src_country": {
+          "type": "keyword"
+        },
+        "serial": {
+          "type": "keyword"
+        },
+        "src_zone": {
+          "type": "keyword"
+        },
+        "proto": {
+          "type": "keyword"
+        },
+        "dst_port": {
+          "type": "integer"
+        },
+        "natdst_ip": {
+          "type": "ip"
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "natsrc_ip": {
+          "type": "ip"
+        }
+      },
+      "dynamic_templates": [
+        {
+          "sls_generic_columns_as_keyword": {
+            "match": "column*",
+            "match_mapping_type": "*",
+            "mapping": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        }
+      ]
+    }
+  },
+  "composed_of": []
+}

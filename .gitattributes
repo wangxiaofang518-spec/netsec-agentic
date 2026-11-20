@@ -1,0 +1,3 @@
+# shell scripts must stay LF (CRLF breaks bash after a Windows checkout)
+*.sh text eol=lf
+*.enc binary

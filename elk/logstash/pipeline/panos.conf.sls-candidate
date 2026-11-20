@@ -1,0 +1,329 @@
+input {
+  udp {
+    port => 514
+    type => "panos-syslog"
+  }
+  tcp {
+    port => 6514
+    type => "panos-syslog"
+    ssl_enable => true
+    ssl_verify => false
+    ssl_supported_protocols => ["TLSv1.2"]
+    ssl_cert => "/etc/logstash/certs/server.crt"
+    ssl_key => "/etc/logstash/certs/server.key"
+  }
+}
+
+filter {
+  if [type] == "panos-syslog" {
+    # ── 格式识别:SLS(Strata Logging Service)转发 vs NGFW 直发 ──
+    # SLS 格式(RFC5424 + octet framing):
+    #   290 <14>1 2026-07-06T15:45:42.698Z logfwd20-...-hww88 logforwarder - panwlogs - <PAN-OS CSV>
+    # NGFW 直发格式(BSD syslog):
+    #   <14>Jul  6 07:59:14 VM300-Azure-CN-GPGW 1,2026/07/06 07:59:09,serial,TRAFFIC,...
+    # SLS 的 CSV 无 future_use 首列(log_type 在第3列),NGFW 有(log_type 在第4列)。
+    # 处理:剥 SLS 头提取 CSV,prepend 占位列对齐 NGFW 列序,复用同一套下游解析。
+    grok {
+      match => { "message" => "^%{NONNEGINT}?\s*<%{POSINT:syslog_pri}>1 %{TIMESTAMP_ISO8601:sls_syslog_ts} %{NOTSPACE:sls_logfwd_host} logforwarder %{NOTSPACE} panwlogs %{NOTSPACE} %{GREEDYDATA:sls_csv}" }
+      add_tag => ["sls-forwarded"]
+      tag_on_failure => ["_not_sls"]
+    }
+
+    if "sls-forwarded" in [tags] {
+      # prepend 占位列,使 SLS CSV 列序与 NGFW 对齐(补 future_use 位)
+      mutate {
+        replace => { "panos_csv" => "-,%{sls_csv}" }
+        add_field => { "device_hostname" => "Prisma-Access" }
+        add_field => { "log_origin" => "sls" }
+      }
+    } else {
+      # NGFW 直发:原 BSD syslog 头解析
+      grok {
+        match => { "message" => "<%{POSINT:syslog_pri}>%{SYSLOGTIMESTAMP:syslog_timestamp} %{IPORHOST:device_hostname} %{GREEDYDATA:panos_csv}" }
+      }
+      mutate { add_field => { "log_origin" => "ngfw" } }
+    }
+
+    csv {
+      source => "panos_csv"
+      separator => ","
+      columns => [
+        "future_use",
+        "receive_time",
+        "serial",
+        "log_type",
+        "subtype",
+        "sequence_number",
+        "time_generated_raw",
+        "col8","col9","col10","col11","col12","col13","col14","col15",
+        "col16","col17","col18","col19","col20","col21","col22","col23",
+        "col24","col25","col26","col27","col28","col29","col30","col31",
+        "col32","col33","col34","col35","col36","col37","col38","col39",
+        "col40","col41","col42","col43","col44","col45","col46","col47",
+        "col48","col49","col50","col51","col52","col53","col54","col55",
+        "col56","col57","col58","col59","col60","col61","col62","col63",
+        "col64","col65","col66","col67","col68"
+      ]
+    }
+
+    if [log_type] == "TRAFFIC" {
+      mutate {
+        rename => {
+          "col8"  => "src_ip"
+          "col9"  => "dst_ip"
+          "col10" => "natsrc_ip"
+          "col11" => "natdst_ip"
+          "col12" => "rule"
+          "col13" => "src_user"
+          "col14" => "dst_user"
+          "col15" => "application"
+          "col16" => "vsys"
+          "col17" => "src_zone"
+          "col18" => "dst_zone"
+          "col19" => "inbound_if"
+          "col20" => "outbound_if"
+          "col21" => "log_action"
+          "col23" => "session_id"
+          "col24" => "repeat_count"
+          "col25" => "src_port"
+          "col26" => "dst_port"
+          "col27" => "natsrc_port"
+          "col28" => "natdst_port"
+          "col29" => "flags"
+          "col30" => "proto"
+          "col31" => "action"
+          "col32" => "bytes"
+          "col33" => "bytes_sent"
+          "col34" => "bytes_received"
+          "col35" => "packets"
+          "col36" => "start_time"
+          "col37" => "elapsed"
+          "col38" => "category"
+          "col40" => "seqno"
+          "col42" => "src_country"
+          "col43" => "dst_country"
+          "col45" => "pkts_sent"
+          "col46" => "pkts_received"
+          "col47" => "session_end_reason"
+          "col53" => "device_name"
+          "col54" => "action_source"
+        }
+        add_tag => ["panos-traffic"]
+      }
+      mutate {
+        convert => {
+          "src_port"       => "integer"
+          "dst_port"       => "integer"
+          "bytes"          => "integer"
+          "bytes_sent"     => "integer"
+          "bytes_received" => "integer"
+          "packets"        => "integer"
+          "elapsed"        => "integer"
+          "pkts_sent"      => "integer"
+          "pkts_received"  => "integer"
+        }
+      }
+    }
+
+    else if [log_type] == "THREAT" {
+      mutate {
+        rename => {
+          "col8"  => "src_ip"
+          "col9"  => "dst_ip"
+          "col10" => "natsrc_ip"
+          "col11" => "natdst_ip"
+          "col12" => "rule"
+          "col13" => "src_user"
+          "col14" => "dst_user"
+          "col15" => "application"
+          "col16" => "vsys"
+          "col17" => "src_zone"
+          "col18" => "dst_zone"
+          "col19" => "inbound_if"
+          "col20" => "outbound_if"
+          "col21" => "log_action"
+          "col23" => "session_id"
+          "col24" => "repeat_count"
+          "col25" => "src_port"
+          "col26" => "dst_port"
+          "col27" => "natsrc_port"
+          "col28" => "natdst_port"
+          "col29" => "flags"
+          "col30" => "proto"
+          "col31" => "action"
+          "col34" => "threat_id"
+          "col35" => "category"
+          "col36" => "severity"
+          "col37" => "direction"
+          "col40" => "seqno"
+          "col42" => "src_country"
+          "col43" => "dst_country"
+          "col53" => "device_name"
+        }
+        add_tag => ["panos-threat"]
+      }
+      mutate {
+        convert => {
+          "src_port" => "integer"
+          "dst_port" => "integer"
+        }
+      }
+    }
+
+    else if [log_type] == "SYSTEM" {
+      mutate {
+        rename => {
+          "col8"  => "vsys"
+          "col9"  => "event_id"
+          "col10" => "object"
+          "col13" => "severity_level"
+          "col14" => "description"
+          "col40" => "seqno"
+        }
+        add_tag => ["panos-system"]
+      }
+      # 丢弃噪音: event_id=general 占 SYSTEM 日志 94%,为周期性状态输出,无分析价值
+      if [event_id] == "general" {
+        drop { }
+      }
+    }
+
+    else if [log_type] == "GLOBALPROTECT" {
+      mutate {
+        rename => {
+          "col8"  => "vsys"
+          "col9"  => "event_type"
+          "col10" => "stage"
+          "col11" => "auth_method"
+          "col13" => "username"
+          "col14" => "src_country"
+          "col16" => "ip"
+          "col17" => "virtual_ip"
+          "col22" => "gp_version"
+          "col23" => "client_os"
+          "col27" => "error_msg"
+          "col29" => "result"
+          "col32" => "connection_type"
+          "col34" => "gateway_name"
+          "col35" => "seqno"
+        }
+        add_tag => ["panos-globalprotect"]
+      }
+    }
+
+    else if [log_type] == "USERID" {
+      mutate {
+        rename => {
+          "col8"  => "vsys"
+          "col9"  => "ip"
+          "col10" => "username"
+          "col17" => "login_type"
+          "col18" => "gp_source"
+          "col19" => "seqno"
+          "col26" => "device_name"
+        }
+        add_tag => ["panos-globalprotect"]
+      }
+    }
+
+    else if [log_type] == "CONFIG" {
+      mutate {
+        rename => {
+          "col8"  => "vsys"
+          "col9"  => "admin"
+          "col10" => "client"
+          "col11" => "result"
+          "col12" => "config_path"
+          "col15" => "cmd"
+          "col40" => "seqno"
+        }
+        add_tag => ["panos-config"]
+      }
+    }
+
+    else if [log_type] == "HIPMATCH" {
+      mutate {
+        rename => {
+          "col8"  => "user"
+          "col9"  => "vsys"
+          "col10" => "machine_name"
+          "col11" => "os"
+          "col12" => "src_ip"
+          "col13" => "matchname"
+          "col14" => "matchcount"
+          "col15" => "matchtype"
+          "col25" => "device_hostname"
+          "col26" => "vsys_id"
+          "col27" => "src_ipv6"
+          "col28" => "mac_address"
+          "col29" => "mac_serial"
+          "col31" => "high_res_timestamp"
+        }
+        add_tag => ["panos-hipmatch"]
+      }
+    }
+
+    else {
+      mutate {
+        add_tag => ["panos-other"]
+      }
+    }
+
+    date {
+      # NGFW 直发: 2026/07/06 07:59:09  |  SLS 转发: 2026-07-06T15:43:11.215Z / 2026-07-06T15:43:11Z
+      match => ["time_generated_raw", "YYYY/MM/dd HH:mm:ss", "ISO8601"]
+      timezone => "Asia/Shanghai"
+      target => "@timestamp"
+    }
+
+    mutate {
+      add_field => { "log_source" => "paloalto" }
+      remove_field => ["panos_csv", "syslog_pri", "time_generated_raw", "sequence_number", "sls_csv", "sls_syslog_ts", "sls_logfwd_host", "col22", "col39", "col41", "col44", "col48", "col49", "col50", "col51", "col52", "col55", "col56", "col57", "col58", "col59", "col60", "col61", "col62", "col63", "col64", "col65", "col66", "col67", "col68"]
+    }
+  }
+}
+
+output {
+  if "panos-traffic" in [tags] {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-traffic-%{+YYYY.MM.dd}"
+    }
+  }
+  else if "panos-threat" in [tags] {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-threat-%{+YYYY.MM.dd}"
+    }
+  }
+  else if "panos-system" in [tags] {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-system-%{+YYYY.MM.dd}"
+    }
+  }
+  else if "panos-globalprotect" in [tags] {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-globalprotect-%{+YYYY.MM.dd}"
+    }
+  }
+  else if "panos-config" in [tags] {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-config-%{+YYYY.MM.dd}"
+    }
+  }
+  else if "panos-hipmatch" in [tags] {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-hipmatch-%{+YYYY.MM.dd}"
+    }
+  }
+  else {
+    elasticsearch {
+      hosts => ["http://elasticsearch:9200"]
+      index => "panos-other-%{+YYYY.MM.dd}"
+    }
+  }
+}

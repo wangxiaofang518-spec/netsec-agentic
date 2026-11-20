@@ -1,0 +1,9 @@
+# 真密钥与审计绝不进镜像（env 只在运行时经 env_file 注入）
+secrets/agent.env
+secrets/*.env
+!secrets/agent.env.example
+audit/
+node_modules/
+**/__pycache__/
+**/*.pyc
+*.log

@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.installed.cfg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets / credentials (NEVER commit these)
+.env
+.env.*
+*.secret
+secrets.json
+
+# netsec-agent: 密钥/审计/临时（agent.env 不匹配上面的 .env，必须显式挡）
+netsec-agent/secrets/agent.env
+netsec-agent/secrets/*.env
+!netsec-agent/secrets/agent.env.example
+netsec-agent/audit/
+netsec-agent/_har_sse.txt
+netsec-agent/**/node_modules/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# encrypted secrets workflow — plaintext must never be committed
+secrets-plain/
+*.pem
+*PASSPHRASE*
+secrets/*.tmp

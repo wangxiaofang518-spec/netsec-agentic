@@ -1,0 +1,136 @@
+{
+  "index_patterns": [
+    "panos-traffic-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "panos-ilm-30d"
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "natdst_port": {
+          "type": "integer"
+        },
+        "bytes_received": {
+          "type": "long"
+        },
+        "rule": {
+          "type": "keyword"
+        },
+        "repeat_count": {
+          "type": "integer"
+        },
+        "dst_ip": {
+          "type": "ip"
+        },
+        "packets": {
+          "type": "long"
+        },
+        "src_ip": {
+          "type": "ip"
+        },
+        "elapsed": {
+          "type": "integer"
+        },
+        "device_name": {
+          "type": "keyword"
+        },
+        "log_type": {
+          "type": "keyword"
+        },
+        "inbound_if": {
+          "type": "keyword"
+        },
+        "device_hostname": {
+          "type": "keyword"
+        },
+        "subtype": {
+          "type": "keyword"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "session_end_reason": {
+          "type": "keyword"
+        },
+        "vsys": {
+          "type": "keyword"
+        },
+        "dst_country": {
+          "type": "keyword"
+        },
+        "pkts_received": {
+          "type": "long"
+        },
+        "session_id": {
+          "type": "keyword"
+        },
+        "outbound_if": {
+          "type": "keyword"
+        },
+        "bytes_sent": {
+          "type": "long"
+        },
+        "dst_zone": {
+          "type": "keyword"
+        },
+        "src_port": {
+          "type": "integer"
+        },
+        "pkts_sent": {
+          "type": "long"
+        },
+        "@timestamp": {
+          "type": "date"
+        },
+        "application": {
+          "type": "keyword"
+        },
+        "src_country": {
+          "type": "keyword"
+        },
+        "serial": {
+          "type": "keyword"
+        },
+        "bytes": {
+          "type": "long"
+        },
+        "src_zone": {
+          "type": "keyword"
+        },
+        "proto": {
+          "type": "keyword"
+        },
+        "dst_port": {
+          "type": "integer"
+        },
+        "natdst_ip": {
+          "type": "ip"
+        },
+        "natsrc_port": {
+          "type": "integer"
+        },
+        "natsrc_ip": {
+          "type": "ip"
+        }
+      },
+      "dynamic_templates": [
+        {
+          "sls_generic_columns_as_keyword": {
+            "match": "column*",
+            "match_mapping_type": "*",
+            "mapping": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        }
+      ]
+    }
+  },
+  "composed_of": []
+}
